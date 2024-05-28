@@ -1,3 +1,5 @@
+-- I have create schema project
+
 CREATE TABLE project.runners (
   "runner_id" INTEGER,
   "registration_date" DATE
