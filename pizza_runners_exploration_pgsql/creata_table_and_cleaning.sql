@@ -109,7 +109,6 @@ VALUES
 
 
 -- CLEANING DATA
-
 -- 1. Clean table customer_orders
 SELECT * FROM customer_orders
 WHERE exclusions LIKE '%null%' OR exclusions LIKE '%nan' OR exclusions = '';
