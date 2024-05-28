@@ -65,13 +65,39 @@ WHERE cancellation IS NULL
 GROUP BY c.customer_id
 ORDER BY 1; 
 
+-- This method uses CTE, i think it will be faster
+with cte AS (
+SELECT c.customer_id,
+	CASE WHEN c.exclusions IS NOT NULL OR c.extras IS NOT NULL THEN 1 ELSE 0 END AS at_least_1_change,
+	CASE WHEN c.exclusions IS NULL AND c.extras IS NULL THEN 1 ELSE 0 END AS no_changes
+FROM customer_orders c
+JOIN runner_orders r 
+	ON c.order_id = r.order_id
+WHERE cancellation IS NULL
+)
+
+SELECT customer_id,
+	SUM(at_least_1_change),
+	SUM(no_changes)
+FROM cte
+GROUP BY customer_id
+ORDER BY 1;
 
 
+-- 8. How many pizzas were delivered that had both exclusions and extras?
+SELECT c.customer_id,
+	SUM(CASE WHEN c.exclusions <> '' AND c.extras <> '' THEN 1 ELSE 0 END) AS exclusions_extras
+FROM customer_orders c
+JOIN runner_orders r
+	ON c.order_id = r.order_id
+WHERE r.cancellation IS NULL
+GROUP BY c.customer_id
+ORDER BY 1;
+	
+-- 9. What was the total volume of pizzas ordered for each hour of the day?
 
--- How many pizzas were delivered that had both exclusions and extras?
--- What was the total volume of pizzas ordered for each hour of the day?
--- What was the volume of orders for each day of the week?
 
+-- 10. What was the volume of orders for each day of the week?
 
 
 
