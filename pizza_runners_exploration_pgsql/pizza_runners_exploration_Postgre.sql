@@ -95,10 +95,36 @@ GROUP BY c.customer_id
 ORDER BY 1;
 	
 -- 9. What was the total volume of pizzas ordered for each hour of the day?
-
+SELECT 
+	DATE_TRUNC('hour', order_time) AS order_hour,
+	COUNT(order_id) AS total_pizzas
+FROM customer_orders
+GROUP BY order_hour
+ORDER BY 1;
+ 
 
 -- 10. What was the volume of orders for each day of the week?
+with cte AS (
+	SELECT 
+		EXTRACT(DOW FROM order_time) AS day_of_week,
+		COUNT(order_id) AS order_count
+	FROM customer_orders
+	GROUP BY day_of_week
+	ORDER BY 1
+)
 
+SELECT 
+	CASE 
+		WHEN day_of_week = 0 THEN 'Sunday'
+		WHEN day_of_week = 1 THEN 'Monday'
+		WHEN day_of_week = 2 THEN 'Tuesday'
+		WHEN day_of_week = 3 THEN 'Wednesday'
+		WHEN day_of_week = 4 THEN 'Thursday'
+		WHEN day_of_week = 5 THEN 'Friday'
+		WHEN day_of_week = 6 THEN 'Saturday'
+	END AS day_of_week,
+	order_count
+FROM cte;
 
 
 
