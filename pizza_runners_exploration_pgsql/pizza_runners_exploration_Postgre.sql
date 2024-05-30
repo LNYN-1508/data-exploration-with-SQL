@@ -248,28 +248,85 @@ ORDER BY 1;
 
 
 -- 7. What is the successful delivery percentage for each runner?
-with cte AS (SELECT 
+
+with cte AS (SELECT
 			 	runner_id,
-				COUNT(order_id) AS count_with_null
+			 	COUNT(order_id) AS order_cancelled
 			 FROM runner_orders
 			 WHERE pickup_time IS NULL
 			 GROUP BY runner_id
-		 	 ORDER BY 1)
+			 ORDER BY 1
+			)
 			 
 SELECT 
 	r.runner_id,
-	COUNT(r.order_id),
-	cte.runner_id,
-	cte.count_with_null
+	COUNT(r.order_id) AS total_delivery,
+	cte.order_cancelled,
+	CASE
+		WHEN order_cancelled IS NOT NULL THEN ((COUNT(r.order_id) - cte.order_cancelled)::FLOAT / COUNT(r.order_id)::FLOAT * 100)
+		ELSE COUNT(r.order_id) / COUNT(r.order_id) * 100
+	END AS percentage
 FROM runner_orders r
 LEFT JOIN cte
 	ON r.runner_id = cte.runner_id
-GROUP BY r.runner_id, cte.runner_id, cte.count_with_null
+GROUP BY r.runner_id, cte.order_cancelled
 ORDER BY 1;
 
-
-
-
+----------------
+WITH total_orders AS (
+    SELECT
+        runner_id,
+        COUNT(order_id) AS total_delivery
+    FROM
+        runner_orders
+    GROUP BY
+        runner_id
+),
+successful_deliveries AS (
+    SELECT
+        runner_id,
+        COUNT(order_id) AS successful_delivery
+    FROM
+        runner_orders
+    WHERE
+        pickup_time IS NOT NULL
+        AND cancellation IS NULL
+    GROUP BY
+        runner_id
+)
+SELECT
+    t.runner_id,
+    t.total_delivery,
+    COALESCE(s.successful_delivery, 0) AS successful_delivery,
+    (COALESCE(s.successful_delivery, 0)::FLOAT / t.total_delivery::FLOAT) * 100 AS success_percentage
+FROM
+    total_orders t
+LEFT JOIN
+    successful_deliveries s ON t.runner_id = s.runner_id
+ORDER BY
+    t.runner_id;
+	
+	
+----
+WITH cancellation_counter AS (
+SELECT
+	runner_id,
+    CASE
+    	WHEN cancellation IS NULL THEN 1
+	ELSE 0
+    END AS no_cancellation_count,
+    CASE
+    	WHEN cancellation IS NOT NULL THEN 1
+	ELSE 0
+    END AS cancellation_count
+FROM runner_orders
+)
+    
+SELECT 
+	runner_id,
+    SUM(no_cancellation_count)::FLOAT / (SUM(no_cancellation_count)::FLOAT + SUM(cancellation_count)::FLOAT)*100 AS delivery_success_percentage
+FROM cancellation_counter
+GROUP BY runner_id;
 
 
 
