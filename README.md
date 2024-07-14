@@ -8,7 +8,7 @@
 
 ---
 
-## 🍕 Case Study #2 - Pizza Runner
+## 🍕 Case Study #1 - Pizza Runner
 <p align="center">
   <img width=40% height=40%" src="https://github.com/ndleah/8-Week-SQL-Challenge/blob/main/IMG/org-2.png">
 
