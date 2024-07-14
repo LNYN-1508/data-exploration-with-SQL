@@ -161,7 +161,6 @@ View Entity Relationship Diagram
 ---
 
 ## ♻️ Data Cleaning
-[![View Data Exploration Folder](https://img.shields.io/badge/Creating_And_Cleaning_Data-007BFF?style=for-the-badge&logo=GITHUB)](https://github.com/LNYN-1508/data-exploration-with-SQL/blob/main/pizza_runners_exploration_pgsql/creata_table_and_cleaning.sql)
 
 <details>
 <summary>
@@ -287,7 +286,7 @@ Cleaning data
   
 ## Clean customer_orders data:
 
-- With this table, the only dirty elements are the inappropriate 'null' values. Therefore, I will replace all of them
+- With this table, the only dirty elements are the inappropriate 'null' values. Therefore, I will replace all of them with 'NULL'
 
 ** ** 
     SELECT * FROM customer_orders
@@ -296,8 +295,8 @@ Cleaning data
     UPDATE customer_orders
     SET exclusions = 
     	(CASE WHEN exclusions LIKE '%null%' 
-    	 		OR exclusions LIKE '%nan' 
-    	 		OR exclusions = '' THEN NULL ELSE exclusions END
+    	 	OR exclusions LIKE '%nan' 
+    	 	OR exclusions = '' THEN NULL ELSE exclusions END
     	);
     
     UPDATE customer_orders
@@ -340,5 +339,127 @@ Cleaning data
 |10      |104        |1       |          |      |2020-01-11 18:34:49 |
 |10      |104        |1       |2, 6      |1, 4  |2020-01-11 18:34:49 |
 
+## Clean runner_orders data:
+- There are 2 elements that are considered as 'dirty' data:
+  - Inapproriate null values
+  - Including mixed entries like '20km' and '32mins'
 
+** **
+    UPDATE runner_orders
+    SET pickup_time = CASE WHEN pickup_time LIKE '%null%' THEN NULL ELSE pickup_time END,
+      distance = CASE WHEN distance LIKE '%null%' THEN NULL ELSE distance END,
+      duration = CASE WHEN duration LIKE '%null%' THEN NULL ELSE duration END,
+      cancellation = CASE WHEN cancellation LIKE '%null%' OR cancellation = '' THEN NULL ELSE cancellation END
+    ;
+    
+    SELECT * FROM runner_orders;
+    UPDATE runner_orders
+    SET distance = replace(distance, 'km', '');
+    
+    -- Change data type of column distance
+    ALTER TABLE runner_orders
+    ALTER COLUMN distance TYPE DECIMAL(3, 1)
+    USING distance::DECIMAL(3, 1);
+    
+    -- Just take the number for easier query so I delete anything that is not number
+    -- And change data type of column duration
+    UPDATE runner_orders
+    SET duration = TRIM(regexp_replace(duration, 'minutes|mins|minute', ''));
+    
+    ALTER TABLE runner_orders
+    ALTER COLUMN duration TYPE INT
+    USING duration::INT;
+
+    -- Change the column name
+    ALTER TABLE runner_orders
+    RENAME COLUMN distance TO distance_km;
+    
+    ALTER TABLE runner_orders
+    RENAME COLUMN duration TO duration_mins;
+
+### Before
+|order_id|runner_id|pickup_time          |distance|duration   |cancellation             |
+|--------|---------|---------------------|--------|-----------|-------------------------|
+|1       |1        |2021-01-01 18:15:34  |20km    |32 minutes |                         |
+|2       |1        |2021-01-01 19:10:54  |20km    |27 minutes |                         |
+|3       |1        |2021-01-03 00:12:37  |13.4km  |20 mins    |NaN                      |
+|4       |2        |2021-01-04 13:53:03  |23.4    |40         |NaN                      |
+|5       |3        |2021-01-08 21:10:57  |10      |15         |NaN                      |
+|6       |3        |null                 |null    |null       |Restaurant Cancellation  |
+|7       |2        |2020-01-08 21:30:45  |25km    |25mins     |null                     |
+|8       |2        |2020-01-10 00:15:02  |23.4 km |15 minute  |null                     |
+|9       |2        |null                 |null    |null       |Customer Cancellation    |
+|10      |1        |2020-01-11 18:50:20  |10km    |10minutes  |null                     |
+
+### After 
+|order_id|runner_id|pickup_time          |distance_km|duration_mins|cancellation             |
+|--------|---------|---------------------|-----------|-------------|-------------------------|
+|1       |1        |2020-01-01 18:15:34  |20.0       |32           |                         |
+|2       |1        |2020-01-01 19:10:54  |20.0       |27           |                         |
+|3       |1        |2020-01-03 00:12:37  |13.4       |20           |                         |
+|4       |2        |2020-01-04 13:53:03  |23.4       |40           |                         |
+|5       |3        |2020-01-08 21:10:57  |10.0       |15           |                         |
+|6       |3        |                     |           |             |Restaurant Cancellation  |
+|7       |2        |2020-01-08 21:30:45  |25.0       |25           |                         |
+|8       |2        |2020-01-10 00:15:02  |23.4       |15           |                         |
+|9       |2        |                     |           |             |Customer Cancellation    |
+|10      |1        |2020-01-11 18:50:20  |10.0       |10           |                         |
+
+
+## Clean pizza_recipes data:
+
+- The 'topping' column is comma-seperated, it will be hard to query so i will explode it
+
+** ** 
+    CREATE TEMP TABLE temp_pizza_recipes (
+    	pizza_id INT,
+    	topping_id TEXT
+    );
+    
+    INSERT INTO temp_pizza_recipes (pizza_id, topping_id)
+    SELECT 
+        pizza_id,
+        unnest(string_to_array(toppings, ',')::INT[])
+    FROM pizza_recipes;
+    
+    -- Delete all data of table pizza_recipes
+    TRUNCATE TABLE pizza_recipes;
+    
+    -- Insert data into table pizza_recipes
+    INSERT INTO pizza_recipes (pizza_id, toppings)
+    SELECT pizza_id, topping_id FROM temp_pizza_recipes;
+    
+    DROP TABLE IF EXISTS temp_pizza_recipes;
+    
+    -- Change data type
+    ALTER TABLE pizza_recipes
+    ALTER COLUMN toppings TYPE INT
+    USING toppings::INT;
+
+### Before
+|pizza_id|toppings                 |
+|--------|-------------------------|
+|1       |1, 2, 3, 4, 5, 6, 8, 10  |
+|2       |4, 6, 7, 9, 11, 12       |
+
+### After 
+|pizza_id|toppings   |
+|--------|-----------|
+|1       |1          |
+|1       |2          |
+|1       |3          |
+|1       |4          |
+|1       |5          |
+|1       |6          |
+|1       |8          |
+|1       |10         |
+|2       |4          |
+|2       |6          |
+|2       |7          |
+|2       |9          |
+|2       |11         |
+|2       |12         |
+
+### Other 3 tables are clean enough
+[![View Data Exploration Folder](https://img.shields.io/badge/Creating_And_Cleaning_Datasets-007BFF?style=for-the-badge&logo=GITHUB)](https://github.com/LNYN-1508/data-exploration-with-SQL/blob/main/pizza_runners_exploration_pgsql/creata_table_and_cleaning.sql)
 </details>
