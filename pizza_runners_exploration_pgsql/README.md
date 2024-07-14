@@ -463,3 +463,206 @@ Cleaning data
 ### Other 3 tables are clean enough
 [![View Data Exploration Folder](https://img.shields.io/badge/Creating_And_Cleaning_Datasets-007BFF?style=for-the-badge&logo=GITHUB)](https://github.com/LNYN-1508/data-exploration-with-SQL/blob/main/pizza_runners_exploration_pgsql/creata_table_and_cleaning.sql)
 </details>
+
+---
+
+## 🔍 Data Exploration
+
+<details>
+<summary> 
+Pizza Metrics
+</summary>
+  
+### **Q1. How many pizzas were ordered?**
+```sql
+SELECT COUNT(pizza_id) AS pizza_amounts
+FROM customer_orders;
+```
+|pizza_amounts|
+|-------------|
+|14           |
+
+### **Q2. How many unique customer orders were made?**
+```sql
+SELECT COUNT(DISTINCT order_id) AS total_unique_orders
+FROM customer_orders;
+```
+|total_unique_orders|
+|-------------------|
+|10                 |
+
+### **Q3. How many successful orders were delivered by each runner?**
+```sql
+SELECT runner_id, COUNT(order_id) AS successful_delivery
+FROM runner_orders
+WHERE cancellation IS NULL
+GROUP BY runner_id;
+```
+|runner_id|successful_delivery|
+|---------|-------------------|
+|1        |4                  |
+|2        |3                  |
+|3        |1                  |
+
+### **Q4. How many of each type of pizza was delivered?**
+```sql
+SELECT pizza_id, COUNT(pizza_id)
+FROM customer_orders c
+JOIN runner_orders r ON c.order_id = r.order_id
+WHERE r.cancellation IS NULL
+GROUP BY pizza_id; 
+```
+|pizza_id|count|
+|--------|-----|
+|1       |9    |
+|2       |3    |
+
+### **Q5. How many Vegetarian and Meatlovers were ordered by each customer?**
+```sql
+SELECT customer_id, 
+	SUM(CASE WHEN pizza_id = 1 THEN 1 ELSE 0 END) AS total_meatlover,
+	SUM(CASE WHEN pizza_id = 2 THEN 1 ELSE 0 END) AS total_vegetarian
+FROM customer_orders
+GROUP BY customer_id
+ORDER BY customer_id;
+```
+|customer_id|total_meatlover|total_vegetarian|
+|-----------|---------------|----------------|
+|101        |2              |1               |
+|102        |2              |1               |
+|103        |3              |1               |
+|104        |3              |0               |
+|105        |0              |1               |
+
+### **Q6. What was the maximum number of pizzas delivered in a single order?**
+```sql
+SELECT r.order_id, COUNT(c.order_id) AS total_orders
+FROM customer_orders c
+JOIN runner_orders r
+  ON c.order_id = r.order_id
+WHERE r.pickup_time IS NOT NULL
+GROUP BY r.order_id
+ORDER BY 1;
+```
+|order_id|total_orders|
+|--------|------------|
+|1       |1           |
+|2       |1           |
+|3       |2           |
+|4       |3           |
+|5       |1           |
+|7       |1           |
+|8       |1           |
+|10      |2           |
+
+### **Q7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?**
+```sql
+SELECT c.customer_id,
+	SUM(CASE WHEN c.exclusions IS NULL AND c.extras IS NULL THEN 1 ELSE 0 END) AS no_changes,
+	SUM(CASE WHEN c.exclusions IS NOT NULL OR c.extras IS NOT NULL THEN 1 ELSE 0 END) AS at_least_1_change
+FROM customer_orders c
+JOIN runner_orders r 
+	ON c.order_id = r.order_id
+WHERE cancellation IS NULL
+GROUP BY c.customer_id
+ORDER BY 1; 
+```
+OR 
+```sql
+with cte AS (
+SELECT c.customer_id,
+	CASE WHEN c.exclusions IS NOT NULL OR c.extras IS NOT NULL THEN 1 ELSE 0 END AS at_least_1_change,
+	CASE WHEN c.exclusions IS NULL AND c.extras IS NULL THEN 1 ELSE 0 END AS no_changes
+FROM customer_orders c
+JOIN runner_orders r 
+	ON c.order_id = r.order_id
+WHERE cancellation IS NULL
+)
+
+SELECT customer_id,
+	SUM(at_least_1_change) AS at_least_1_change,
+	SUM(no_changes) AS no_changes
+FROM cte
+GROUP BY customer_id
+ORDER BY 1;
+```
+|customer_id|at_least_1_change|no_changes|
+|-----------|-----------------|----------|
+|101        |0                |2         |
+|102        |0                |3         |
+|103        |3                |0         |
+|104        |2                |1         |
+|105        |1                |0         |
+
+### **Q8. How many pizzas were delivered that had both exclusions and extras?**
+```sql
+SELECT customer_id,
+	SUM(CASE WHEN c.exclusions <> '' AND c.extras <> '' THEN 1 ELSE 0 END) AS exclusions_extras_count
+FROM customer_orders c
+JOIN runner_orders r
+	ON c.order_id = r.order_id
+WHERE r.cancellation IS NULL
+GROUP BY c.customer_id
+ORDER BY 2 DESC; 
+```
+|customer_id|exclusions_extras_count|
+|-----------|-----------------------|
+|104        |1                      |
+|101        |0                      |
+|102        |0                      |
+|103        |0                      |
+|105        |0                      |
+
+### **Q9. What was the total volume of pizzas ordered for each hour of the day?**
+```sql
+SELECT 
+	DATE_TRUNC('hour', order_time) AS order_hour,
+	COUNT(order_id) AS total_pizzas
+FROM customer_orders
+GROUP BY order_hour
+ORDER BY 1;
+```
+|order_hour         |total_pizzas|
+|-------------------|------------|
+|2020-01-01 18:00:00|1           |
+|2020-01-01 19:00:00|1           |
+|2020-01-02 23:00:00|2           |
+|2020-01-04 13:00:00|3           |
+|2020-01-08 21:00:00|3           |
+|2020-01-09 23:00:00|1           |
+|2020-01-10 11:00:00|1           |
+|2020-01-11 18:00:00|2           |
+
+### **Q10. What was the volume of orders for each day of the week?**
+```sql
+with cte AS (
+	SELECT 
+		EXTRACT(DOW FROM order_time) AS day_of_week,
+		COUNT(order_id) AS order_count
+	FROM customer_orders
+	GROUP BY day_of_week
+	ORDER BY 1
+)
+
+SELECT 
+	CASE 
+		WHEN day_of_week = 0 THEN 'Sunday'
+		WHEN day_of_week = 1 THEN 'Monday'
+		WHEN day_of_week = 2 THEN 'Tuesday'
+		WHEN day_of_week = 3 THEN 'Wednesday'
+		WHEN day_of_week = 4 THEN 'Thursday'
+		WHEN day_of_week = 5 THEN 'Friday'
+		WHEN day_of_week = 6 THEN 'Saturday'
+	END AS day_of_week,
+	order_count
+FROM cte;
+```
+|day_of_week|order_count|
+|-----------|-----------|
+|Wednesday  |5          |
+|Thursday   |3          |
+|Friday     |1          |
+|Saturday   |5          |
+
+</details>
+
