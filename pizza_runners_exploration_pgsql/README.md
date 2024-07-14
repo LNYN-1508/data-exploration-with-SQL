@@ -737,8 +737,8 @@ WITH order_durations AS (
         AND ro.cancellation IS NULL
 )
 SELECT
-    runner_id,
-    ROUND(AVG(duration_in_minutes), 2) AS average_duration
+  runner_id,
+  ROUND(AVG(duration_in_minutes), 2) AS average_duration
 FROM
     order_durations
 GROUP BY
