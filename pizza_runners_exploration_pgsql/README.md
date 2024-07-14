@@ -832,20 +832,20 @@ ORDER BY 1;
 WITH cancellation_counter AS (
 SELECT
 	runner_id,
-    CASE
+  CASE
     	WHEN cancellation IS NULL THEN 1
 	ELSE 0
-    END AS no_cancellation_count,
-    CASE
-    	WHEN cancellation IS NOT NULL THEN 1
+  END AS no_cancellation_count,
+  CASE
+      WHEN cancellation IS NOT NULL THEN 1
 	ELSE 0
-    END AS cancellation_count
+  END AS cancellation_count
 FROM runner_orders
 )
     
 SELECT 
 	runner_id,
-    SUM(no_cancellation_count)::FLOAT / (SUM(no_cancellation_count)::FLOAT + SUM(cancellation_count)::FLOAT)*100 AS delivery_success_percentage
+  SUM(no_cancellation_count)::FLOAT / (SUM(no_cancellation_count)::FLOAT + SUM(cancellation_count)::FLOAT)*100 AS delivery_success_percentage
 FROM cancellation_counter
 GROUP BY runner_id;
 ```
