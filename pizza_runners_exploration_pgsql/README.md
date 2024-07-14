@@ -752,7 +752,7 @@ SELECT
   EXTRACT(EPOCH FROM (r.pickup_time::TIMESTAMP - c.order_time::TIMESTAMP)) / 60.0 AS different_in_mins,
   CASE 
     WHEN COUNT(c.order_id) = 1 THEN 'Takes more than 10 mins to make an order'
-    WHEN COUNT(c.order_id) > 1 THEN 'The time increases based on the orders but still around or more than 10 mins for 1 order
+    WHEN COUNT(c.order_id) > 1 THEN 'The time increases based on the orders but still around or more than 10 mins for 1 order'
   END AS relationship
 FROM customer_orders c JOIN runner_orders r 
   ON c.order_id = r.order_id AND pickup_time IS NOT NULL
