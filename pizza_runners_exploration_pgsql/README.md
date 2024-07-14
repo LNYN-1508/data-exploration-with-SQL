@@ -150,5 +150,16 @@ This table contains all of the **```topping_name```** values with their correspo
 
 </details>
 
+<details>
+<summary>
+View Entity Relationship Diagram
+</summary>
+  <p align="center">
+<img src="project_ERD.png" width=80% height=80%></p>
+</details>
+
 ---
+
+## ♻️ Data Cleaning
+[![View Data Exploration Folder](https://img.shields.io/badge/Creating_And_Cleaning_Data-007BFF?style=for-the-badge&logo=GITHUB)](https://github.com/LNYN-1508/data-exploration-with-SQL/blob/main/pizza_runners_exploration_pgsql/creata_table_and_cleaning.sql)
 
