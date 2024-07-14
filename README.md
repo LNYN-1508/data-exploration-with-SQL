@@ -10,7 +10,7 @@
 
 ## 🍕 Case Study #2 - Pizza Runner
 <p align="center">
-  <img width=40% height=40%" src="/IMG/2.png">
+  <img width=40% height=40%" src="https://github.com/ndleah/8-Week-SQL-Challenge/blob/main/IMG/org-2.png">
 
 Danny was scrolling through his Instagram feed when something really caught his eye - “80s Retro Styling and Pizza Is The Future!”
 
