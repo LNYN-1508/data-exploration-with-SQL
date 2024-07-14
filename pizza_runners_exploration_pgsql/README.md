@@ -1,4 +1,5 @@
 # 🍕 Case Study #1 - Pizza Runner
+- https://8weeksqlchallenge.com/case-study-2/
 <p align="center">
 <img src="https://github.com/ndleah/8-Week-SQL-Challenge/blob/main/IMG/org-2.png" width=40% height=40%>
 
@@ -15,12 +16,15 @@ View table
 The runners table shows the **```registration_date```** for each new runner.
 
 
+
 |runner_id|registration_date|
 |---------|-----------------|
 |1        |1/1/2021         |
 |2        |1/3/2021         |
 |3        |1/8/2021         |
 |4        |1/15/2021        |
+
+
 
 </details>
 
@@ -34,22 +38,23 @@ View table
 
 Customer pizza orders are captured in the **```customer_orders```** table with 1 row for each individual pizza that is part of the order.
 
-|order_id|customer_id|pizza_id|exclusions|extras|order_time        |
-|--------|---------|--------|----------|------|------------------|
-|1  |101      |1       |          |      |44197.75349537037 |
-|2  |101      |1       |          |      |44197.79226851852 |
-|3  |102      |1       |          |      |44198.9940162037  |
-|3  |102      |2       |          |*null* |44198.9940162037  |
-|4  |103      |1       |4         |      |44200.558171296296|
-|4  |103      |1       |4         |      |44200.558171296296|
-|4  |103      |2       |4         |      |44200.558171296296|
-|5  |104      |1       |null      |1     |44204.87533564815 |
-|6  |101      |2       |null      |null  |44204.877233796295|
-|7  |105      |2       |null      |1     |44204.88922453704 |
-|8  |102      |1       |null      |null  |44205.99621527778 |
-|9  |103      |1       |4         |1, 5  |44206.47429398148 |
-|10 |104      |1       |null      |null  |44207.77417824074 |
-|10 |104      |1       |2, 6      |1, 4  |44207.77417824074 |
+|order_id|customer_id|pizza_id|exclusions|extras|order_time          |
+|--------|-----------|--------|----------|------|---------------------|
+|1       |101        |1       |          |      |2021-01-01 18:05:02  |
+|2       |101        |1       |          |      |2021-01-01 19:00:52  |
+|3       |102        |1       |          |      |2021-01-02 23:51:23  |
+|3       |102        |2       |          |NaN   |2021-01-02 23:51:23  |
+|4       |103        |1       |4         |      |2021-01-04 13:23:46  |
+|4       |103        |1       |4         |      |2021-01-04 13:23:46  |
+|4       |103        |2       |4         |      |2021-01-04 13:23:46  |
+|5       |104        |1       |null      |1     |2021-01-08 21:00:29  |
+|6       |101        |2       |null      |null  |2021-01-08 21:03:13  |
+|7       |105        |2       |null      |1     |2021-01-08 21:20:29  |
+|8       |102        |1       |null      |null  |2021-01-09 23:54:33  |
+|9       |103        |1       |4         |1, 5  |2021-01-10 11:22:59  |
+|10      |104        |1       |null      |null  |2021-01-11 18:34:49  |
+|10      |104        |1       |2, 6      |1, 4  |2021-01-11 18:34:49  |
+
 
 </details>
 
@@ -68,18 +73,19 @@ The **```distance```** and **```duration```** fields are related to how far and 
 
 
 
-|order_id|runner_id|pickup_time|distance  |duration|cancellation      |
-|--------|---------|-----------|----------|--------|------------------|
-|1       |1        |1/1/2021 18:15|20km      |32 minutes|                  |
-|2       |1        |1/1/2021 19:10|20km      |27 minutes|                  |
-|3       |1        |1/3/2021 0:12|13.4km    |20 mins |*null*             |
-|4       |2        |1/4/2021 13:53|23.4      |40      |*null*             |
-|5       |3        |1/8/2021 21:10|10        |15      |*null*             |
-|6       |3        |null       |null      |null    |Restaurant Cancellation|
-|7       |2        |1/8/2020 21:30|25km      |25mins  |null              |
-|8       |2        |1/10/2020 0:15|23.4 km   |15 minute|null              |
-|9       |2        |null       |null      |null    |Customer Cancellation|
-|10      |1        |1/11/2020 18:50|10km      |10minutes|null              |
+|order_id|runner_id|pickup_time          |distance|duration   |cancellation             |
+|--------|---------|---------------------|--------|-----------|-------------------------|
+|1       |1        |2021-01-01 18:15:34  |20km    |32 minutes |                         |
+|2       |1        |2021-01-01 19:10:54  |20km    |27 minutes |                         |
+|3       |1        |2021-01-03 00:12:37  |13.4km  |20 mins    |NaN                      |
+|4       |2        |2021-01-04 13:53:03  |23.4    |40         |NaN                      |
+|5       |3        |2021-01-08 21:10:57  |10      |15         |NaN                      |
+|6       |3        |null                 |null    |null       |Restaurant Cancellation  |
+|7       |2        |2020-01-08 21:30:45  |25km    |25mins     |null                     |
+|8       |2        |2020-01-10 00:15:02  |23.4 km |15 minute  |null                     |
+|9       |2        |null                 |null    |null       |Customer Cancellation    |
+|10      |1        |2020-01-11 18:50:20  |10km    |10minutes  |null                     |
+
 
 </details>
 
@@ -90,10 +96,11 @@ The **```distance```** and **```duration```** fields are related to how far and 
 View table
 </summary>
 
-|pizza_id|pizza_name|
-|--------|----------|
-|1       |Meat Lovers|
-|2       |Vegetarian|
+|pizza_id|pizza_name   |
+|--------|-------------|
+|1       |Meat Lovers  |
+|2       |Vegetarian   |
+
 
 </details>
 
@@ -107,10 +114,11 @@ View table
 Each **```pizza_id```** has a standard set of **```toppings```** which are used as part of the pizza recipe.
 
 
-|pizza_id|toppings |
-|--------|---------|
-|1       |1, 2, 3, 4, 5, 6, 8, 10| 
-|2       |4, 6, 7, 9, 11, 12| 
+|pizza_id|toppings                 |
+|--------|-------------------------|
+|1       |1, 2, 3, 4, 5, 6, 8, 10  |
+|2       |4, 6, 7, 9, 11, 12       |
+
 
 </details>
 
@@ -126,18 +134,19 @@ This table contains all of the **```topping_name```** values with their correspo
 
 |topping_id|topping_name|
 |----------|------------|
-|1         |Bacon       | 
-|2         |BBQ Sauce   | 
-|3         |Beef        |  
-|4         |Cheese      |  
-|5         |Chicken     |     
-|6         |Mushrooms   |  
-|7         |Onions      |     
-|8         |Pepperoni   | 
-|9         |Peppers     |   
-|10        |Salami      | 
-|11        |Tomatoes    | 
+|1         |Bacon       |
+|2         |BBQ Sauce   |
+|3         |Beef        |
+|4         |Cheese      |
+|5         |Chicken     |
+|6         |Mushrooms   |
+|7         |Onions      |
+|8         |Pepperoni   |
+|9         |Peppers     |
+|10        |Salami      |
+|11        |Tomatoes    |
 |12        |Tomato Sauce|
+
 
 </details>
 
