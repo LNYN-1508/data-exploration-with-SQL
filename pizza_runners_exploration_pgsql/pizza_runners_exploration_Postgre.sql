@@ -1,6 +1,3 @@
--- I have create schema project
-SET search_path = project;
-
 -- DATA EXPLORATION
 -- A. Pizza Metrics
 -- 1. How many pizzas were ordered?
