@@ -1,6 +1,5 @@
--- I have create schema project
 -- Create 6 tables: runners, customer_orders, runner_orders, pizza_names, pizza_recipes, pizza_toppings
-CREATE TABLE project.runners (
+CREATE TABLE runners (
   "runner_id" INTEGER,
   "registration_date" DATE
 );
