@@ -1,3 +1,6 @@
-In this repository, it contains all the Data Exploration projects that I have done by using PostgreSQL and MySQL. All the datasets that have been used were taken from various sources, and case studies. 
+# Data Exploration with SQL
+- In this repository, I will contain all my projects about Data Exploration with SQL. Thank you for spending time reading these projects!
 
-1. pizza_runners_exploration. All source material and respected credit is from: https://8weeksqlchallenge.com/
+
+## 📕  Table Of Contents
+* [🍕 Case Study #1 - Pizza Runner](#-case-study-1---pizza-runner)
