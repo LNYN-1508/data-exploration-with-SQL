@@ -19,4 +19,4 @@ Danny was sold on the idea, but he knew that pizza alone was not going to help h
 Danny started by recruiting “runners” to deliver fresh pizza from Pizza Runner Headquarters (otherwise known as Danny’s house) and also maxed out his credit card to pay freelance developers to build a mobile app to accept orders from customers.
 
 ### View full case study introduction [here](https://8weeksqlchallenge.com/case-study-2/).
-[![View Data Exploration Folder](https://img.shields.io/badge/Solution_Case_Study_1-971901?style=for-the-badge&logo=GITHUB)](https://github.com/LNYN-1508/data-exploration-with-SQL/tree/main/pizza_runners_exploration_pgsql)
+[![View Data Exploration Folder](https://img.shields.io/badge/Solution_Case_Study_1-2C1451?style=for-the-badge&logo=GITHUB)](https://github.com/LNYN-1508/data-exploration-with-SQL/tree/main/pizza_runners_exploration_pgsql)
