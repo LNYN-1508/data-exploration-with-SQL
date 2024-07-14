@@ -461,7 +461,7 @@ Cleaning data
 |2       |12         |
 
 ### Other 3 tables are clean enough
-[![View Data Exploration Folder](https://img.shields.io/badge/Creating_And_Cleaning_Datasets-007BFF?style=for-the-badge&logo=GITHUB)](https://github.com/LNYN-1508/data-exploration-with-SQL/blob/main/pizza_runners_exploration_pgsql/creata_table_and_cleaning.sql)
+[![View Data Exploration Folder](https://img.shields.io/badge/Creating_And_Cleaning_Data-21811F?style=for-the-badge&logo=GITHUB)](https://github.com/LNYN-1508/data-exploration-with-SQL/blob/main/pizza_runners_exploration_pgsql/creata_table_and_cleaning.sql)
 </details>
 
 ---
@@ -670,4 +670,225 @@ FROM cte;
 <summary>
 Runner and Customer Experience
 </summary>
+
+### **Q1. How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)**
+```sql
+WITH RECURSIVE weekly_dates AS (
+    SELECT 
+        '2021-01-01'::timestamp AS week_start,
+        ('2021-01-01'::timestamp + interval '7 days') AS week_end
+    UNION ALL
+    SELECT 
+        week_start + interval '7 days' AS week_start,
+        week_end + interval '7 days' AS week_end
+    FROM 
+        weekly_dates
+    WHERE 
+        week_start + interval '7 days' <= (SELECT max(registration_date) FROM runners)
+),
+signup_counts AS (
+    SELECT
+        wd.week_start::date AS week_start,
+        count(*) AS signups
+    FROM
+        weekly_dates wd
+    LEFT JOIN
+       	runners r
+    ON
+        r.registration_date >= wd.week_start
+    AND
+        r.registration_date < wd.week_end
+    GROUP BY
+        wd.week_start
+)
+SELECT
+    week_start,
+    signups
+FROM
+    signup_counts
+ORDER BY
+    week_start;
+
+	
+SELECT
+	CEILING((registration_date - '2021-01-01'::date) / 7) AS week_number,
+	COUNT(runner_id)
+FROM runners
+GROUP BY week_number;
+```
+|week_number|count|
+|-----------|-----|
+|0          |2    |
+|1          |1    |
+|2          |1    |
+
+### **Q2. What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?**
+```sql
+WITH order_durations AS (
+    SELECT
+        ro.runner_id,
+        EXTRACT(EPOCH FROM (ro.pickup_time::TIMESTAMP - co.order_time::TIMESTAMP)) / 60.0 AS duration_in_minutes
+    FROM
+        runner_orders ro
+    JOIN
+        customer_orders co ON ro.order_id = co.order_id
+    WHERE
+        ro.pickup_time IS NOT NULL
+        AND ro.cancellation IS NULL
+)
+SELECT
+    runner_id,
+    ROUND(AVG(duration_in_minutes), 2) AS average_duration
+FROM
+    order_durations
+GROUP BY
+    runner_id
+ORDER BY
+    runner_id;
+```
+|runner_id|average_duration|
+|---------|----------------|
+|1        |15.68           |
+|2        |23.72           |
+|3        |10.47           |
+
+### **Q3. Is there any relationship between the number of pizzas and how long the order takes to prepare?**
+```sql
+SELECT 
+	c.order_id,
+	COUNT(c.order_id) AS count_order,
+	c.order_time,
+	r.pickup_time,
+	EXTRACT(EPOCH FROM (r.pickup_time::TIMESTAMP - c.order_time::TIMESTAMP)) / 60.0 AS different_in_mins,
+	CASE 
+		WHEN COUNT(c.order_id) = 1 THEN 'Takes more than 10 mins to make an order'
+		WHEN COUNT(c.order_id) > 1 THEN 'The time increases based on the orders but still around or more than 10 mins for 1 order'
+	END AS relationship
+FROM customer_orders c
+JOIN runner_orders r 
+	ON c.order_id = r.order_id AND pickup_time IS NOT NULL
+GROUP BY c.order_id, order_time, r.pickup_time
+ORDER BY 1;  
+```
+|order_id|count_order|order_time          |pickup_time         |different_in_mins        |relationship                                               |
+|--------|-----------|---------------------|---------------------|-------------------------|------------------------------------------------------------|
+|1       |1          |2020-01-01 18:05:02  |2020-01-01 18:15:34  |10.533333333333333       |Takes more than 10 mins to make an order                    |
+|2       |1          |2020-01-01 19:00:52  |2020-01-01 19:10:54  |10.033333333333333       |Takes more than 10 mins to make an order                    |
+|3       |2          |2020-01-02 23:51:23  |2020-01-03 00:12:37  |21.233333333333333       |The time increases based on the orders but still around or more than 10 mins for 1 order |
+|4       |3          |2020-01-04 13:23:46  |2020-01-04 13:53:03  |29.283333333333333       |The time increases based on the orders but still around or more than 10 mins for 1 order |
+|5       |1          |2020-01-08 21:00:29  |2020-01-08 21:10:57  |10.466666666666667       |Takes more than 10 mins to make an order                    |
+|7       |1          |2020-01-08 21:20:29  |2020-01-08 21:30:45  |10.266666666666667       |Takes more than 10 mins to make an order                    |
+|8       |1          |2020-01-09 23:54:33  |2020-01-10 00:15:02  |20.483333333333334       |Takes more than 10 mins to make an order                    |
+|10      |2          |2020-01-11 18:34:49  |2020-01-11 18:50:20  |15.516666666666667       |The time increases based on the orders but still around or more than 10 mins for 1 order |
+
+### **Q4. What was the average distance travelled for each customer?**
+```sql
+SELECT 
+	c.customer_id,
+	ROUND(AVG(distance_km),2) AS avg_distance
+FROM customer_orders c
+LEFT JOIN runner_orders r
+	ON c.order_id = r.order_id
+GROUP BY c.customer_id;
+```
+|customer_id|avg_distance|
+|-----------|------------|
+|101        |20.00       |
+|103        |23.40       |
+|104        |10.00       |
+|105        |25.00       |
+|102        |16.73       |
+
+### **Q5. What was the difference between the longest and shortest delivery times for all orders?**
+```sql
+SELECT 
+	MAX(duration_mins) AS max_duration,
+	MIN(duration_mins) AS min_duration,
+	MAX(duration_mins) - MIN(duration_mins) AS difference_in_mins
+FROM runner_orders;
+```
+|max_duration|min_duration|difference_in_mins|
+|------------|------------|------------------|
+|40          |10          |30                |
+
+### **Q6. What was the average speed for each runner for each delivery and do you notice any trend for these values?**
+```sql
+SELECT 
+	runner_id,
+	ROUND(avg(distance_km),2) AS avg_distance,
+	ROUND(avg(duration_mins),2) AS avg_duration
+FROM runner_orders
+GROUP BY runner_id
+ORDER BY 1;
+```
+|runner_id|avg_distance|avg_duration|
+|---------|------------|------------|
+|1        |15.85       |22.25       |
+|2        |23.93       |26.67       |
+|3        |10.00       |15.00       |
+
+### **Q7. What is the successful delivery percentage for each runner?**
+```sql
+WITH cancellation_counter AS (
+SELECT
+	runner_id,
+    CASE
+    	WHEN cancellation IS NULL THEN 1
+	ELSE 0
+    END AS no_cancellation_count,
+    CASE
+    	WHEN cancellation IS NOT NULL THEN 1
+	ELSE 0
+    END AS cancellation_count
+FROM runner_orders
+)
+    
+SELECT 
+	runner_id,
+    SUM(no_cancellation_count)::FLOAT / (SUM(no_cancellation_count)::FLOAT + SUM(cancellation_count)::FLOAT)*100 AS delivery_success_percentage
+FROM cancellation_counter
+GROUP BY runner_id;
+```
+OR
+```sql
+WITH total_orders AS (
+    SELECT
+        runner_id,
+        COUNT(order_id) AS total_delivery
+    FROM
+        runner_orders
+    GROUP BY
+        runner_id
+),
+successful_deliveries AS (
+    SELECT
+        runner_id,
+        COUNT(order_id) AS successful_delivery
+    FROM
+        runner_orders
+    WHERE
+        pickup_time IS NOT NULL
+        AND cancellation IS NULL
+    GROUP BY
+        runner_id
+)
+SELECT
+    t.runner_id,
+    t.total_delivery,
+    COALESCE(s.successful_delivery, 0) AS successful_delivery,
+    (COALESCE(s.successful_delivery, 0)::FLOAT / t.total_delivery::FLOAT) * 100 AS success_percentage
+FROM
+    total_orders t
+LEFT JOIN
+    successful_deliveries s ON t.runner_id = s.runner_id
+ORDER BY
+    t.runner_id;
+```
+|runner_id|total_delivery|successful_delivery|success_percentage|
+|---------|--------------|-------------------|------------------|
+|1        |4             |4                  |100               |
+|2        |4             |3                  |75                |
+|3        |2             |1                  |50                |
+
+
 </details>
