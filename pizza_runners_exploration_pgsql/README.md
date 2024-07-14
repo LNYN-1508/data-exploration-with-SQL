@@ -666,3 +666,8 @@ FROM cte;
 
 </details>
 
+<details>
+<summary>
+Pricing and Ratings
+</summary>
+</details>
