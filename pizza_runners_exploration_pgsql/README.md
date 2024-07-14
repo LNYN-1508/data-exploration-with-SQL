@@ -830,22 +830,16 @@ ORDER BY 1;
 ### **Q7. What is the successful delivery percentage for each runner?**
 ```sql
 WITH cancellation_counter AS (
-SELECT
-	runner_id,
-  CASE
-    	WHEN cancellation IS NULL THEN 1
-	ELSE 0
-  END AS no_cancellation_count,
-  CASE
-      WHEN cancellation IS NOT NULL THEN 1
-	ELSE 0
-  END AS cancellation_count
-FROM runner_orders
+    SELECT
+        runner_id,
+        CASE WHEN cancellation IS NULL THEN 1 ELSE 0 END AS no_cancellation_count,
+        CASE WHEN cancellation IS NOT NULL THEN 1 ELSE 0 END AS cancellation_count
+    FROM runner_orders
 )
     
 SELECT 
-	runner_id,
-  SUM(no_cancellation_count)::FLOAT / (SUM(no_cancellation_count)::FLOAT + SUM(cancellation_count)::FLOAT)*100 AS delivery_success_percentage
+    runner_id,
+    SUM(no_cancellation_count)::FLOAT / (SUM(no_cancellation_count)::FLOAT + SUM(cancellation_count)::FLOAT) * 100 AS delivery_success_percentage
 FROM cancellation_counter
 GROUP BY runner_id;
 ```
