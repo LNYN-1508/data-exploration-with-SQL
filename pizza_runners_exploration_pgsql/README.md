@@ -664,7 +664,12 @@ FROM cte;
 |Friday     |1          |
 |Saturday   |5          |
 
+</br>
+
+[![View Data Exploration Folder](https://img.shields.io/badge/Pizza_Metrics-E76F51?style=for-the-badge&logo=GITHUB)](https://github.com/LNYN-1508/data-exploration-with-SQL/blob/main/pizza_runners_exploration_pgsql/pizza_runners_exploration_Postgre.sql)
+
 </details>
+
 
 <details>
 <summary>
@@ -884,5 +889,8 @@ ORDER BY
 |2        |4             |3                  |75                |
 |3        |2             |1                  |50                |
 
+</br>
+
+[![View Data Exploration Folder](https://img.shields.io/badge/Runner_And_Customer_Experience-F9BF3B?style=for-the-badge&logo=GITHUB)](https://github.com/LNYN-1508/data-exploration-with-SQL/blob/main/pizza_runners_exploration_pgsql/pizza_runners_exploration_Postgre.sql)
 
 </details>
