@@ -1,7 +1,6 @@
 # Data Exploration with SQL
 - In this repository, I will contain all my projects about Data Exploration with SQL. Thank you for spending time reading these projects!
 - Thank you Danny for the great SQL case studies https://8weeksqlchallenge.com/
-- Thanks https://github.com/ndleah for the cool ideas of designing the github 
 
 ## 📕  Table Of Contents
 * [🍕 Case Study #1 - Pizza Runner](#-case-study-1---pizza-runner)
